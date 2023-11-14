@@ -1,5 +1,5 @@
 import { AStepper } from '@haibun/core/build/lib/defs.js';
-import { actionOK, findStepperFromOption, getFromRuntime, stringOrError } from '@haibun/core/build/lib/util/index.js';
+import { actionOK, findStepperFromOption, getFromRuntime, getStepperOption, stringOrError } from '@haibun/core/build/lib/util/index.js';
 import { WEBSERVER } from '@haibun/web-server-express/build/defs.js';
 import { setSolidLiteRoutes } from './lib/haibunSolidLite.js';
 const STORAGE = 'STORAGE';
@@ -22,17 +22,23 @@ class haibunSolidLiteStepper extends AStepper {
     async setWorld(world, steppers) {
         await super.setWorld(world, steppers);
         this.storage = findStepperFromOption(steppers, this, this.getWorld().extraOptions, STORAGE);
-        this.folder = findStepperFromOption(steppers, this, this.getWorld().extraOptions, FOLDER);
+        this.folder = getStepperOption(this, FOLDER, this.getWorld().extraOptions);
     }
     steps = {
         addSolidLiteRoutes: {
-            gwta: 'start tally route at {loc}',
+            gwta: 'start solid lite routes',
             action: async () => {
                 const webserver = getFromRuntime(this.getWorld().runtime, WEBSERVER);
                 setSolidLiteRoutes(webserver, this.storage, this.folder);
                 return actionOK();
             },
         },
+        fulfills: {
+            gwta: 'fulfills: {what}',
+            action: async () => {
+                return actionOK();
+            },
+        }
     };
 }
 export default haibunSolidLiteStepper;

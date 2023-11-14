@@ -1,6 +1,8 @@
 import { fileURLToPath } from 'url';
 import path, { dirname } from 'path';
+import { guessMediaType } from '@haibun/domain-storage/build/domain-storage.js';
 import { getContentType } from "./mimeTypes.js";
+import { readFileSync } from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 export function setSolidLiteRoutes(app, storage, dataDirectory) {
@@ -29,19 +31,20 @@ export function setSolidLiteRoutes(app, storage, dataDirectory) {
             const authHeader = req.headers.authorization;
             const apiKey = process.env.SOLID_API_KEY;
             // Check if the Authorization header is present and formatted correctly
-            if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.split(' ')[1] !== apiKey) {
-                return res.status(401).send('Unauthorized');
-            }
+            // if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.split(' ')[1] !== apiKey) {
+            //     return res.status(401).send('Unauthorized');
+            // }
         }
         next();
     };
     app.use(protectRoutes);
     // Ensure data directory exists
-    storage.ensureDirSync(dataDirectory);
-    const defaultFilePath = path.join(dataDirectory, 'index.html'); // Path for index.html in the data directory
-    if (!storage.existsSync(defaultFilePath)) {
+    storage.ensureDirExists(dataDirectory);
+    const defaultFilePath = path.join(dataDirectory, 'profile.html'); // Path for index.html in the data directory
+    if (!storage.exists((defaultFilePath))) {
         // Copy profile.html to index.html if index.html does not exist
-        storage.copySync(path.join(__dirname, 'profile.html'), defaultFilePath);
+        const profile = readFileSync(path.join(__dirname, '..', '..', 'files', 'content', 'profile.html'), 'utf-8');
+        storage.writeFile(defaultFilePath, profile, "html" /* EMediaTypes.html */);
     }
     function setCorsHeaders(res) {
         console.log('setCorsHeaders');
@@ -68,54 +71,47 @@ export function setSolidLiteRoutes(app, storage, dataDirectory) {
     app.addKnownRoute('post', '/data/:filename', (req, res) => {
         const { filename } = req.params;
         const filePath = path.join(dataDirectory, filename);
-        storage.outputFileSync(filePath, req.body.content);
+        storage.writeFile(filePath, req.body.content, guessMediaType(filename));
         res.status(201).send('File created successfully.');
     });
     // HEAD: Retrieve the headers of a file
-    app.addKnownRoute('head', '/data/:filename', (req, res) => {
+    app.addKnownRoute('head', '/data/:filename', async (req, res) => {
         const { filename } = req.params;
         const filePath = path.join(dataDirectory, filename);
-        if (storage.existsSync(filePath)) {
-            storage.stat(filePath, (err, stats) => {
-                if (err) {
-                    console.error(err);
-                    return res.status(500).send('An error occurred while retrieving the file info.');
-                }
-                // Get the file extension from the filename
-                const ext = path.extname(filename);
-                // Determine the content type
-                const contentType = getContentType(ext);
-                res.setHeader('Content-Type', contentType);
-                res.setHeader('Content-Length', stats.size);
-                res.setHeader('Last-Modified', stats.mtime.toUTCString());
-                res.status(200).end();
-            });
+        if (storage.exists(filePath)) {
+            const lstat = await storage.lstatToIFile(filePath);
+            // Get the file extension from the filename
+            const ext = path.extname(filename);
+            // Determine the content type
+            const contentType = getContentType(ext);
+            res.setHeader('Content-Type', contentType);
+            res.setHeader('Content-Length', lstat.size);
+            res.setHeader('Last-Modified', new Date(lstat.created).getUTCDate());
+            res.status(200).end();
         }
         else {
             res.status(404).send('File not found.');
         }
     });
     // READ: Get a list of files or a specific file
-    app.addKnownRoute('get', '/:filename?', (req, res) => {
+    app.addKnownRoute('get', '/:filename?', async (req, res) => {
         const { filename } = req.params;
         console.log('filename', filename);
         if (filename) {
             const filePath = path.join(dataDirectory, filename);
-            if (storage.existsSync(filePath)) {
-                // Get the file extension from the filename
+            if (storage.exists(filePath)) {
                 const ext = path.extname(filename);
-                // Determine the content type
                 const contentType = getContentType(ext);
-                console.log('Content-Type', contentType);
                 res.setHeader('Content-Type', contentType);
-                res.sendFile(filePath);
+                const contents = storage.readFile(filePath);
+                res.send(contents);
             }
             else {
                 res.status(404).send('File not found.');
             }
         }
         else {
-            const files = storage.readdirSync(dataDirectory);
+            const files = await storage.readdir(dataDirectory);
             res.json(files);
         }
     });
@@ -123,22 +119,21 @@ export function setSolidLiteRoutes(app, storage, dataDirectory) {
     app.addKnownRoute('put', '/:filename', (req, res) => {
         const { filename } = req.params;
         const filePath = path.join(dataDirectory, filename);
-        storage.outputFile(filePath, req.body, err => {
-            if (err) {
-                console.error(err);
-                res.status(500).send('An error occurred while writing the file.');
-            }
-            else {
-                res.send('File created/updated successfully.');
-            }
-        });
+        try {
+            storage.writeFile(filePath, req.body.content, guessMediaType(filename));
+            res.send('File created/updated successfully.');
+        }
+        catch (err) {
+            console.error(err);
+            res.status(500).send('An error occurred while writing the file.');
+        }
     });
     // DELETE: Delete a file
     app.addKnownRoute('delete', '/:filename', (req, res) => {
         const { filename } = req.params;
         const filePath = path.join(dataDirectory, filename);
-        if (storage.existsSync(filePath)) {
-            storage.removeSync(filePath);
+        if (storage.exists(filePath)) {
+            storage.rm(filePath);
             res.send('File deleted successfully.');
         }
         else {

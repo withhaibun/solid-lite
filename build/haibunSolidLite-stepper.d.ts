@@ -33,6 +33,10 @@ declare class haibunSolidLiteStepper extends AStepper {
             gwta: string;
             action: () => Promise<import("@haibun/core/build/lib/defs.js").TOKActionResult>;
         };
+        fulfills: {
+            gwta: string;
+            action: () => Promise<import("@haibun/core/build/lib/defs.js").TOKActionResult>;
+        };
     };
 }
 export default haibunSolidLiteStepper;
