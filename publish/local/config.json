@@ -1,0 +1,15 @@
+{
+  "mode": "all",
+  "steppers": [
+    "~@haibun/domain-webpage/build/domain-webpage",
+    "~@haibun/domain-storage/build/domain-storage",
+    "~@haibun/out-review/build/out-reviews-stepper",
+    "~@haibun/storage-fs/build/storage-fs",
+    "~@haibun/web-playwright/build/web-playwright",
+    "~@haibun/web-server-express/build/web-server-stepper",
+    "vars",
+    "credentials",
+    "haibun"
+  ],
+  "features": {}
+}

@@ -68,6 +68,7 @@ export function setSolidLiteRoutes(app: IWebServer, storage: AStorage, dataDirec
 
     function handleOptions(req, res) {
         setCorsHeaders(res);
+        console.log('preflight');
         res.status(204).end(); // No Content response for preflight requests
     }
 
@@ -87,8 +88,15 @@ export function setSolidLiteRoutes(app: IWebServer, storage: AStorage, dataDirec
     // CREATE: Upload a new file
     app.addKnownRoute('post', '/data/:filename', (req, res) => {
         const { filename } = req.params;
+        // FIXME should not need to parse since we are using express.json()
+        const { data } = JSON.parse(req.body);
         const filePath = path.join(dataDirectory, filename);
-        storage.writeFile(filePath, req.body.content, guessMediaType(filename));
+        console.log('\nxxgg', data, req.body, filePath);
+        storage.writeFile(filePath, data, guessMediaType(filename)).catch(err => {
+            console.error('write', err);
+            res.status(500).send('An error occurred while writing the file.');
+            return;
+        });
         res.status(201).send('File created successfully.');
     });
 
@@ -150,9 +158,11 @@ export function setSolidLiteRoutes(app: IWebServer, storage: AStorage, dataDirec
     });
 
     // DELETE: Delete a file
-    app.addKnownRoute('delete', '/:filename', (req, res) => {
+    app.addKnownRoute('delete', '/data/:filename', (req, res) => {
+        console.log('hihi');
         const { filename } = req.params;
         const filePath = path.join(dataDirectory, filename);
+        console.log('delete', filePath, storage.exists(filePath));
         if (storage.exists(filePath)) {
             storage.rm(filePath);
             res.send('File deleted successfully.');

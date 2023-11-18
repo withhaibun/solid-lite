@@ -2,7 +2,9 @@
   "name": "haibun-solid-lite",
   "type": "module",
   "devDependencies": {
+    "@haibun/domain-webpage": "^1.31.4",
     "@haibun/out-review": "^1.31.4",
+    "@haibun/web-playwright": "^1.31.4",
     "@types/jest": "^29.2.4",
     "@types/node": "^18.11.14",
     "@typescript-eslint/eslint-plugin": "^5.48.0",
@@ -27,7 +29,8 @@
     "ts-jest": "^29.1.1"
   },
   "scripts": {
-    "test-protocol": "HAIBUN_O_HAIBUNSOLIDLITESTEPPER_STORAGE=StorageFS HAIBUN_O_HAIBUNSOLIDLITESTEPPER_FOLDER=test-webroot HAIBUN_O_OUTREVIEWS_STORAGE=StorageFS HAIBUN_KEY=__test haibun-cli protocol",
+    "test-protocol": "HAIBUN_TRACE=true HAIBUN_O_HAIBUNSOLIDLITESTEPPER_STORAGE=StorageFS HAIBUN_O_HAIBUNSOLIDLITESTEPPER_FOLDER=test-webroot HAIBUN_O_OUTREVIEWS_STORAGE=StorageFS HAIBUN_KEY=__test haibun-cli protocol",
+    "publish": "HAIBUN_O_WEBPLAYWRIGHT_STORAGE=StorageFS HAIBUN_TRACE=true HAIBUN_KEY=__test HAIBUN_O_OUTREVIEWS_PUBLISH_ROOT=./files/published HAIBUN_O_OUTREVIEWS_STORAGE=StorageFS haibun-cli --config publish/local publish",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test-watch": "NODE_OPTIONS=--experimental-vm-modules jest",
     "build": "tsc",
