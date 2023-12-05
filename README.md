@@ -1,2 +1,4 @@
+Hai
+Solid web routes, steppers and tests for [Haibun](https://github.com/withhaibun), built around the [Solid Lite specification](https://github.com/solid-lite/draft-spec), basically a Linked Data Platform implmentation.
 
-Adapted from https://github.com/solid-lite/server
+Routes adapted from https://github.com/solid-lite/server
