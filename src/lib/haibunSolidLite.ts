@@ -36,13 +36,17 @@ export function setSolidLiteRoutes(app: IWebServer, storage: AStorage, dataDirec
     // Add middleware to protect routes
     const protectRoutes = (req, res, next) => {
         if (['PUT', 'POST', 'DELETE'].includes(req.method)) {
-            const authHeader = req.headers.authorization;
             const apiKey = process.env.SOLID_API_KEY;
 
-            // Check if the Authorization header is present and formatted correctly
-            // if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.split(' ')[1] !== apiKey) {
-            //     return res.status(401).send('Unauthorized');
-            // }
+            if (apiKey) {
+                const authHeader = req.headers.authorization;
+                // Check if the Authorization header is present and formatted correctly
+                if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.split(' ')[1] !== apiKey) {
+                    return res.status(401).send('Unauthorized');
+                }
+            } else {
+                this.getWorld().logger.warn('No API key set. All requests are allowed.');
+            }
         }
         next();
     }
