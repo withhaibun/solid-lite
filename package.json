@@ -2,9 +2,9 @@
   "name": "haibun-solid-lite",
   "type": "module",
   "devDependencies": {
-    "@haibun/domain-webpage": "1.33.0",
-    "@haibun/out-review": "1.33.0",
-    "@haibun/web-playwright": "1.33.0",
+    "@haibun/domain-webpage": "1.33.5",
+    "@haibun/out-review": "1.33.5",
+    "@haibun/web-playwright": "1.33.5",
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
     "@typescript-eslint/eslint-plugin": "^5.48.0",
@@ -20,12 +20,12 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@haibun/cli": "1.33.0",
-    "@haibun/core": "1.33.0",
-    "@haibun/domain-storage": "1.33.0",
-    "@haibun/storage-fs": "1.33.0",
-    "@haibun/web-http": "1.33.0",
-    "@haibun/web-server-express": "1.33.0",
+    "@haibun/cli": "1.33.5",
+    "@haibun/core": "1.33.5",
+    "@haibun/domain-storage": "1.33.5",
+    "@haibun/storage-fs": "1.33.5",
+    "@haibun/web-http": "1.33.5",
+    "@haibun/web-server-express": "1.33.5",
     "ts-jest": "^29.0.3"
   },
   "scripts": {
@@ -37,5 +37,5 @@
     "build-watch": "tsc -w",
     "lint": "lint --ext .ts ./src/"
   },
-  "version": "1.33.0"
+  "version": "1.33.5"
 }
